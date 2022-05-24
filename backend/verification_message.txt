@@ -1,0 +1,12 @@
+Hi <USERNAME>!
+To send a build request to Billy O'Reilly, you need to verify your email.
+Use the following link to verify yourself and continue with the request:
+
+<LINK_GO>
+
+If you did not make a request to <DOMAIN>, you can ignore this email or click here to put this email on our blacklist: <LINK_BLACKLIST>
+(once on the blacklist, you must contact us to remove it from there if that is what you are looking for)
+
+Automated message,
+<DOMAIN>
+© <YEAR> Billy O'Reilly

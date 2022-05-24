@@ -1,4 +1,4 @@
-# billy
+# Billy O'Reilly's requests page
 
 ## Project setup
 ```

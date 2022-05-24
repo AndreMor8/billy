@@ -9,6 +9,7 @@ html {
 }
 
 body {
+  background-image: url("./assets/background.png");
   background-attachment: fixed;
   background-size: cover;
   background-repeat: no-repeat;
@@ -16,6 +17,9 @@ body {
 }
 #general-view {
   padding: 1em;
+}
+.main {
+  background-color: whitesmoke;
 }
 </style>
 

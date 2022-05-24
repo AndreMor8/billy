@@ -1,0 +1,25 @@
+{
+  "name": "billy-backend",
+  "version": "1.0.0",
+  "description": "Billy's build requests website; backend",
+  "author": {
+    "name": "AndreMor",
+    "url": "https://andremor.dev/",
+    "email": "me@andremor.dev"
+  },
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@nickgatzos/is-email": "^2.0.0",
+    "croner": "^4.3.11",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "express-jsonwebtoken": "^1.0.9",
+    "mongoose": "^6.3.4",
+    "nodemailer": "^6.7.5"
+  }
+}

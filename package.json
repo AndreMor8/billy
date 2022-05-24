@@ -1,15 +1,27 @@
 {
   "name": "billy",
-  "version": "0.1.0",
+  "description": "Billy's build requests website; frontend",
+  "version": "1.0.0",
   "private": true,
+  "author": {
+    "name": "AndreMor",
+    "url": "https://andremor.dev/",
+    "email": "me@andremor.dev"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.1.1",
+    "@fortawesome/free-brands-svg-icons": "^6.1.1",
+    "@fortawesome/free-solid-svg-icons": "^6.1.1",
+    "@fortawesome/vue-fontawesome": "^3.0.0-5",
+    "axios": "^0.27.2",
     "bulma": "^0.9.4",
     "vue": "^3.2.13",
+    "vue-axios": "^3.4.1",
     "vue-router": "^4.0.3"
   },
   "devDependencies": {
@@ -22,5 +34,6 @@
   },
   "gitHooks": {
     "pre-commit": "lint-staged"
-  }
+  },
+  "license": "Apache-2.0"
 }
