@@ -20,7 +20,7 @@ export default {
   methods: {
     goVerify() {
       this.axios
-        .post("http://152.70.198.159:3075/verify", {
+        .post(`${window.apiDomain}/verify`, {
           token: this.$route.query.token,
         })
         .then((e) => {

@@ -1,0 +1,13 @@
+Hi <USERNAME>!
+
+Your build request "<BUILD_REQUEST>" has been removed from the list by Billy O'Reilly.
+
+Reason:
+<REASON>
+
+---------
+You can send another request again at <DOMAIN>.
+
+Automated message,
+<DOMAIN>
+© <YEAR> Billy O'Reilly

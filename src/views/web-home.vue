@@ -14,11 +14,16 @@
       </p>
     </div>
     <form
-      v-if="!no_request_list"
+      v-if="!no_request_list && !admin"
       @submit.prevent="sended ? undefined : sendRequest()"
     >
       <div class="box main" style="max-width: 58em">
-        <h3 class="subtitle">Please complete the following information</h3>
+        <h3 v-if="with_token" class="subtitle">
+          Welcome back. Here you can edit your request
+        </h3>
+        <h3 v-else class="subtitle">
+          Please complete the following information
+        </h3>
         <div class="field">
           <div class="control has-icons-left">
             <input
@@ -124,7 +129,7 @@
             <input
               type="submit"
               class="button is-link"
-              value="Submit"
+              :value="with_token ? 'Modify' : 'Submit'"
               :disabled="sended || null"
             />
           </div>
@@ -140,6 +145,12 @@
         </div>
       </div>
     </form>
+    <div class="box main" style="max-width: 58em" v-else-if="admin">
+      <h2 class="subtitle">
+        You are logged in as administrator, use the Requests button in the
+        navbar to control them.
+      </h2>
+    </div>
     <div class="box main" style="max-width: 58em" v-else>
       <h2 class="subtitle">
         There is no active request list; maybe Billy isn't getting requests
@@ -177,6 +188,7 @@ export default {
         additional: "",
         resend: false,
       },
+      admin: false,
       with_token: false,
       loaded: false,
       no_request_list: false,
@@ -193,7 +205,7 @@ export default {
   methods: {
     getInfo() {
       return this.axios
-        .get("http://152.70.198.159:3075/check-active-request-list")
+        .get(`${window.apiDomain}/check-active-request-list`)
         .then((e) => {
           this.no_request_list = !e.data.enabled;
         })
@@ -202,17 +214,21 @@ export default {
     getTokenInfo() {
       this.with_token = true;
       return this.axios
-        .get("http://152.70.198.159:3075/get-token-info", {
+        .get(`${window.apiDomain}/get-token-info`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access-token")}`,
           },
         })
         .then((e) => {
-          this.form.email = e.data.email;
-          this.form.nickname = e.data.nickname;
-          this.form.anonymity = e.data.anonymity;
-          this.form.build = e.data.build;
-          this.form.additional = e.data.additional;
+          if (e.data.admin) {
+            this.admin = true;
+          } else {
+            this.form.email = e.data.email;
+            this.form.nickname = e.data.nickname;
+            this.form.anonymity = e.data.anonymity;
+            this.form.build = e.data.build;
+            this.form.additional = e.data.additional;
+          }
         })
         .catch((e) => {
           if (e.response?.data?.clearToken)
@@ -229,7 +245,7 @@ export default {
       this.sended = true;
       this.sended_text = "Please wait...";
       this.axios
-        .post("http://152.70.198.159:3075/do-request", this.form, options)
+        .post(`${window.apiDomain}/do-request`, this.form, options)
         .then((e) => {
           this.sended_text = e.data.message;
           if (this.with_token) this.sended = false;

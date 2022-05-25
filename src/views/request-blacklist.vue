@@ -20,7 +20,7 @@ export default {
   methods: {
     goBlacklist() {
       this.axios
-        .post("http://152.70.198.159:3075/blacklist", {
+        .post(`${window.apiDomain}/blacklist`, {
           token: this.$route.query.token,
         })
         .then((e) => {

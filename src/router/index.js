@@ -27,6 +27,13 @@ const routes = [
     component: async function () {
       return await import("../views/request-list.vue");
     }
+  },
+  {
+    path: '/admin',
+    name: 'admin-login',
+    component: async function () {
+      return await import("../views/admin-login.vue");
+    }
   }
 ]
 
