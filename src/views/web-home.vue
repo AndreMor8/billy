@@ -251,7 +251,6 @@ export default {
           if (this.with_token) this.sended = false;
         })
         .catch((e) => {
-          console.log(e.response.data);
           this.sended_text = e.response?.data?.message || e.toString();
           this.form.resend = e.response?.data?.resend || false;
           this.sended = false;
