@@ -41,7 +41,7 @@ const transporter = nodemailer.createTransport({
 const app = express();
 app.use(express.json());
 app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", process.env.NODE_ENV === "development" ? "*" : process.env.DOMAIN);
+    res.setHeader("Access-Control-Allow-Origin", process.env.NODE_ENV === "development" ? "*" : (req.headers["referer"].startsWith("http://" + process.env.IP_DEV) ? "http://" + process.env.IP_DEV : process.env.DOMAIN));
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
     next();
@@ -199,8 +199,9 @@ app.get("/requests", async (req, res) => {
     let token = {};
     try {
         const pre_token = req.headers["authorization"].split(" ");
-        if (pre_token[0] !== "Bearer") return res.status(403).json({ message: "Only Bearer authentication allowed!" });
-        token = jwtManager.verify(pre_token[1] || "");
+        if (pre_token[0] === "Bearer") {
+            token = jwtManager.verify(pre_token[1] || "");
+        }
     } catch (_e) { null; }
     const list = await requestList.findOne({ enabled: true }).lean();
     if (!list) return res.status(403).send({ message: "Without request list..." });

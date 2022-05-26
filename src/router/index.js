@@ -29,6 +29,13 @@ const routes = [
     }
   },
   {
+    path: "/privacy-policy",
+    name: "privacy-policy",
+    component: async function() {
+      return await import("../views/web-privacy-policy.vue");
+    }
+  },
+  {
     path: '/admin',
     name: 'admin-login',
     component: async function () {
