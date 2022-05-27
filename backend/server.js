@@ -47,7 +47,7 @@ app.use((req, res, next) => {
     next();
 });
 app.set("trust proxy", process.env.NODE_ENV !== "development");
-//eslint-disable-next-line
+
 mongoose.connect(process.env.MDB_PATH).then(() => console.log("Connected to database")).catch(console.error);
 const temp_tokens = new Map();
 
