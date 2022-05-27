@@ -9,7 +9,7 @@
         to="/"
         class="navbar-item"
         :class="{ 'is-active': $route.name === 'home' }"
-        ><img src="../assets/logo.png" alt="Billy's icon" width="32"
+        ><img src="../assets/logo.png" alt="Billy's icon" width="28" height="28"
       /></router-link>
       <a
         @click="this.mobile_clicked = !this.mobile_clicked"
