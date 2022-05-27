@@ -211,7 +211,9 @@ app.get("/requests", async (req, res) => {
     } catch (_e) { null; }
     const list = await requestList.findOne({ enabled: true }).lean();
     if (!list) return res.status(403).send({ message: "Without request list...", admin: token?.admin || false });
-    const r = await requests.find({ request_list_id: list._id }, { request_list_id: 0, ips: 0, email: 0 }).lean();
+    const projection = { request_list_id: 0, ips: 0 };
+    if (!token?.admin) projection.email = 0;
+    const r = await requests.find({ request_list_id: list._id }, projection).lean();
     for (const i in r) {
         const fromUser = r[i]._id.toString() === token?.doc_id;
         if (r[i].anonymity == 1 && !r[i].chosen) {

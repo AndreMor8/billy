@@ -97,6 +97,7 @@
       <table v-if="list.length" class="table" style="min-width: 100%">
         <thead>
           <tr>
+            <th v-if="admin">E-mail</th>
             <th>Public nickname</th>
             <th>Build requested</th>
             <th>Chosen for next video?</th>
@@ -106,6 +107,7 @@
         </thead>
         <tbody v-for="req in list" :key="req._id">
           <tr>
+            <td v-if="admin">{{ req.email }}</td>
             <th>
               {{ req.nickname }} <small v-if="req.fromUser">(yours)</small>
             </th>
