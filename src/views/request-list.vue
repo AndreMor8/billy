@@ -3,7 +3,7 @@
     <div class="box main" style="max-width: 17em">
       <h1 class="title">List of requests</h1>
     </div>
-    <div v-if="admin" class="box main" style="max-width: 30em">
+    <div v-if="admin" class="box main" style="max-width: 38em">
       <div class="buttons">
         <button @click="openModal" class="button is-success">
           <span class="icon">
@@ -20,6 +20,16 @@
             <font-awesome-icon :icon="['fas', 'envelope-open']" />
           </span>
           <span>Remove an email from blacklist</span>
+        </button>
+        <button
+          @click="buttonResetActive ? resetAdmin() : undefined"
+          class="button is-danger"
+          :disabled="!buttonResetActive || null"
+        >
+          <span class="icon">
+            <font-awesome-icon :icon="['fas', 'arrow-rotate-right']" />
+          </span>
+          <span>Reset list</span>
         </button>
       </div>
     </div>
@@ -177,6 +187,7 @@ export default {
         sending: false,
       },
       buttonBlActive: true,
+      buttonResetActive: true,
     };
   },
   created() {
@@ -301,6 +312,33 @@ export default {
           alert(e.response?.data?.message || e.toString());
           this.deleting = false;
         });
+    },
+    resetAdmin() {
+      const pr = confirm(
+        "This will clean up the build requests list. Are you sure?"
+      );
+      if (pr) {
+        this.buttonResetActive = false;
+        this.axios
+          .put(
+            `${window.apiDomain}/reset-admin`,
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("access-token")}`,
+              },
+            }
+          )
+          .then((e) => {
+            alert(e.data.message);
+            this.getRequests();
+            this.buttonResetActive = true;
+          })
+          .catch((e) => {
+            alert(e.response?.data?.message || e.toString());
+            this.buttonResetActive = true;
+          });
+      }
     },
   },
 };

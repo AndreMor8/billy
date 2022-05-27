@@ -97,7 +97,7 @@ app.post("/do-request", async (req, res) => {
             const data = jwtManager.verify(pre_token[1]);
             if (!data.admin) {
                 const doc = await requests.findById(data.doc_id).lean();
-                if (!doc) return res.status(404).json({ message: "Can't find that request... Maybe I'm broken or Billy deleted the requests. Returning to blank form..." });
+                if (!doc) return res.status(404).json({ message: "Can't find that request... Maybe I'm broken or Billy deleted the requests. Returning to blank form...", clearToken: true });
                 if (!doc.chosen) {
                     await requests.findByIdAndUpdate(data.doc_id, { $set: { nickname: req.body.nickname, anonymity: req.body.anonymity, build: req.body.build, additional: req.body.additional } }, { new: true, lean: true });
                     return res.status(200).json({ message: "Build request updated!" });
@@ -123,6 +123,12 @@ app.post("/do-request", async (req, res) => {
     const bl = await mailBlacklist.findOne({ email: { $eq: req.body.email } }).lean();
     if (!bl) await transporter.sendMail({ from: "billy@andremor.dev", to: req.body.email, subject: "E-mail verification", text: vmp.replace("<USERNAME>", req.body.nickname).replace("<LINK_GO>", `${process.env.DOMAIN}/verify?token=${temp_token}`).replace("<LINK_BLACKLIST>", `${process.env.DOMAIN}/blacklist?token=${temp_token}`).replaceAll("<DOMAIN>", process.env.DOMAIN).replace("<YEAR>", (new Date().getFullYear())) });
     res.status(200).json({ message: "Email verification send. Please check your inbox ;)" });
+});
+
+app.delete("/do-request", jwtManager.middleware(), async (req, res) => {
+    const doc = await requests.findByIdAndDelete(req.user.doc_id).lean();
+    if (doc) return res.status(200).json({ message: "Request deleted" });
+    else res.status(404).json({ message: "Request not found...", clearToken: true });
 });
 
 app.post("/verify", async (req, res) => {
@@ -204,7 +210,7 @@ app.get("/requests", async (req, res) => {
         }
     } catch (_e) { null; }
     const list = await requestList.findOne({ enabled: true }).lean();
-    if (!list) return res.status(403).send({ message: "Without request list..." });
+    if (!list) return res.status(403).send({ message: "Without request list...", admin: token?.admin || false });
     const r = await requests.find({ request_list_id: list._id }, { request_list_id: 0, ips: 0, email: 0 }).lean();
     for (const i in r) {
         const fromUser = r[i]._id.toString() === token?.doc_id;
@@ -237,6 +243,13 @@ app.get("/requests", async (req, res) => {
             return 0;
         }), admin: token?.admin || false
     });
+});
+
+app.put("/reset-admin", jwtManager.middleware(), async (req, res) => {
+    if (!req.user.admin) return res.status(403).json({ message: "Unauthorized token!" });
+    await requestList.findOneAndUpdate({ enabled: true }, { $set: { enabled: false } }, { new: true, lean: true });
+    await requestList.create({ enabled: true });
+    return res.status(201).json({ message: "Request list created." });
 });
 
 app.put("/requests/:id", jwtManager.middleware(), async (req, res) => {

@@ -124,14 +124,14 @@
         >
         <br v-if="sended_text !== 'Please wait...' || sended" />
         <br v-if="sended_text !== 'Please wait...' || sended" />
-        <div class="field is-grouped">
+        <div class="field is-grouped buttons">
           <div class="control">
             <input
               type="submit"
               class="button is-link"
               :value="with_token ? 'Modify' : 'Submit'"
               :disabled="sended || null"
-            />
+            >
           </div>
           <div class="control">
             <button
@@ -140,6 +140,16 @@
               :disabled="sended || null"
             >
               Clear
+            </button>
+          </div>
+          <div class="control">
+            <button
+              v-if="with_token"
+              @click.prevent="sended ? undefined : deleteRequest()"
+              class="button is-danger"
+              :disabled="sended || null"
+            >
+              Delete
             </button>
           </div>
         </div>
@@ -253,8 +263,42 @@ export default {
         .catch((e) => {
           this.sended_text = e.response?.data?.message || e.toString();
           this.form.resend = e.response?.data?.resend || false;
+          if (e.response?.data?.clearToken) {
+            localStorage.removeItem("access-token");
+            this.with_token = false;
+            this.clear();
+          }
           this.sended = false;
         });
+    },
+    deleteRequest() {
+      const pr = confirm("Are you sure? Irreversible action.");
+      if (pr) {
+        this.sended = true;
+        this.sended_text = "Please wait...";
+        this.axios
+          .delete(`${window.apiDomain}/do-request`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access-token")}`,
+            },
+          })
+          .then((e) => {
+            this.sended_text === e.data.message;
+            localStorage.removeItem("access-token");
+            this.with_token = false;
+            this.clear();
+            this.sended = false;
+          })
+          .catch((e) => {
+            this.sended_text === e.response?.data?.message;
+            if (e.response?.data?.clearToken) {
+              localStorage.removeItem("access-token");
+              this.with_token = false;
+              this.clear();
+              this.sended = false;
+            }
+          });
+      }
     },
     clear() {
       if (!this.with_token) this.form.email = "";
