@@ -1,5 +1,6 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/web-home.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import HomeView from '../views/web-home.vue';
+import web404 from '../views/web-404.vue';
 
 const routes = [
   {
@@ -29,9 +30,9 @@ const routes = [
     }
   },
   {
-    path: "/privacy-policy",
-    name: "privacy-policy",
-    component: async function() {
+    path: '/privacy-policy',
+    name: 'privacy-policy',
+    component: async function () {
       return await import("../views/web-privacy-policy.vue");
     }
   },
@@ -41,12 +42,17 @@ const routes = [
     component: async function () {
       return await import("../views/admin-login.vue");
     }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'web-404',
+    component: web404
   }
-]
+];
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
-})
+});
 
-export default router
+export default router;

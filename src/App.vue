@@ -1,6 +1,6 @@
 <template>
-  <web-navbar />
   <router-view id="general-view" />
+  <web-navbar />
 </template>
 
 <style>

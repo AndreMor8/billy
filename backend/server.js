@@ -90,9 +90,10 @@ app.post("/do-request", async (req, res) => {
     if (typeof req.body.build !== "string") return res.status(400).json({ message: "You must provide a Windows build!" });
     if (typeof req.body.additional !== "string") return res.status(400).json({ message: "Provide correct 'additional' data!" });
 
-    const pre_token = req.headers["authorization"];
-    if (pre_token) {
+    const raw_token = req.headers["authorization"];
+    if (raw_token) {
         try {
+            const pre_token = raw_token.split(" ");
             if (pre_token[0] !== "Bearer") return res.status(403).json({ message: "Only Bearer authentication allowed!" });
             const data = jwtManager.verify(pre_token[1]);
             if (!data.admin) {

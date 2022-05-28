@@ -32,6 +32,7 @@
               placeholder="Contact e-mail"
               :disabled="with_token || sended"
               v-model="form.email"
+              required
             />
             <span class="icon is-small is-left">
               <font-awesome-icon :icon="['fas', 'envelope']" />
@@ -50,6 +51,7 @@
               placeholder="Nickname (can also be a YouTube or Discord username)"
               v-model="form.nickname"
               :disabled="sended"
+              required
             />
             <span class="icon is-small is-left">
               <font-awesome-icon :icon="['fas', 'user']" />
@@ -100,6 +102,7 @@
               placeholder="Windows version and build (eg. Windows Whistler build 2462)"
               v-model="form.build"
               :disabled="sended"
+              required
             />
             <span class="icon is-small is-left">
               <font-awesome-icon :icon="['fab', 'windows']" />
@@ -126,30 +129,42 @@
         <br v-if="sended_text !== 'Please wait...' || sended" />
         <div class="field is-grouped buttons">
           <div class="control">
-            <input
+            <button
               type="submit"
               class="button is-link"
-              :value="with_token ? 'Modify' : 'Submit'"
               :disabled="sended || null"
             >
-          </div>
-          <div class="control">
-            <button
-              @click.prevent="sended ? undefined : clear()"
-              class="button is-link is-light"
-              :disabled="sended || null"
-            >
-              Clear
+              <span class="icon">
+                <font-awesome-icon :icon="['fas', 'paper-plane']"
+              /></span>
+              <span>{{ with_token ? "Modify" : "Submit" }}</span>
             </button>
           </div>
           <div class="control">
             <button
+              type="button"
+              @click="sended ? undefined : clear()"
+              class="button is-link is-light"
+              :disabled="sended || null"
+            >
+              <span class="icon">
+                <font-awesome-icon :icon="['fas', 'broom']"
+              /></span>
+              <span>Clear</span>
+            </button>
+          </div>
+          <div class="control">
+            <button
+              type="button"
               v-if="with_token"
-              @click.prevent="sended ? undefined : deleteRequest()"
+              @click="sended ? undefined : deleteRequest()"
               class="button is-danger"
               :disabled="sended || null"
             >
-              Delete
+              <span class="icon">
+                <font-awesome-icon :icon="['fas', 'trash-can']"
+              /></span>
+              <span>Delete</span>
             </button>
           </div>
         </div>
