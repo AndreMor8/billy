@@ -41,7 +41,7 @@ const transporter = nodemailer.createTransport({
 const app = express();
 app.use(express.json());
 app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", process.env.NODE_ENV === "development" ? "*" : (req.headers["referer"].startsWith("http://" + process.env.IP_DEV) ? "http://" + process.env.IP_DEV : process.env.DOMAIN));
+    res.setHeader("Access-Control-Allow-Origin", process.env.NODE_ENV === "development" ? "*" : (req.headers["referer"]?.startsWith("http://" + process.env.IP_DEV) ? "http://" + process.env.IP_DEV : process.env.DOMAIN));
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
     next();
@@ -122,7 +122,7 @@ app.post("/do-request", async (req, res) => {
 
     //send verification email
     const bl = await mailBlacklist.findOne({ email: { $eq: req.body.email } }).lean();
-    if (!bl) await transporter.sendMail({ from: "billy@andremor.dev", to: req.body.email, subject: "E-mail verification", text: vmp.replace("<USERNAME>", req.body.nickname).replace("<LINK_GO>", `${process.env.DOMAIN}/verify?token=${temp_token}`).replace("<LINK_BLACKLIST>", `${process.env.DOMAIN}/blacklist?token=${temp_token}`).replaceAll("<DOMAIN>", process.env.DOMAIN).replace("<YEAR>", (new Date().getFullYear())) });
+    if (!bl) await transporter.sendMail({ from: process.env.SMTP_USERNAME, to: req.body.email, subject: "E-mail verification", text: vmp.replace("<USERNAME>", req.body.nickname).replace("<LINK_GO>", `${process.env.DOMAIN}/verify?token=${temp_token}`).replace("<LINK_BLACKLIST>", `${process.env.DOMAIN}/blacklist?token=${temp_token}`).replaceAll("<DOMAIN>", process.env.DOMAIN).replace("<YEAR>", (new Date().getFullYear())) });
     res.status(200).json({ message: "Email verification send. Please check your inbox ;)" });
 });
 
@@ -137,6 +137,7 @@ app.post("/verify", async (req, res) => {
     if (typeof req.body.token !== "string") return res.status(400).json({ message: "Provide a temporal verification token!" });
     const data = temp_tokens.get(req.body.token);
     if (!data) return res.status(404).json({ message: "Token not found..." });
+    if (data.admin) return res.status(400).json({ message: "Not here..." });
     if (data.existing_doc) {
         const doc = await requests.findById(data.existing_doc).lean();
         if (doc && !doc.chosen) {
@@ -173,6 +174,7 @@ app.post("/blacklist", async (req, res) => {
     if (typeof req.body.token !== "string") return res.status(400).json({ message: "Provide a temporal verification token!" });
     const data = temp_tokens.get(req.body.token);
     if (!data) return res.status(404).json({ message: "Token not found..." });
+    if (data.admin) return res.status(400).json({ message: "Not here..." });
     await mailBlacklist.create({ email: data.email });
     res.status(200).json({ message: "Added to mail blacklist." });
 });
@@ -219,21 +221,15 @@ app.get("/requests", async (req, res) => {
         const fromUser = r[i]._id.toString() === token?.doc_id;
         if (r[i].anonymity == 1 && !r[i].chosen) {
             if (!token?.admin) {
-                if (!fromUser) {
-                    r[i].nickname = "<redacted>";
-                }
+                if (!fromUser) r[i].nickname = "<redacted>";
             }
         }
         if (r[i].anonymity == 2) {
             if (!token?.admin) {
-                if (!fromUser) {
-                    r[i].nickname = "<redacted>";
-                }
+                if (!fromUser) r[i].nickname = "<redacted>";
             }
         }
-        if (fromUser) {
-            r[i].fromUser = true;
-        }
+        if (fromUser) r[i].fromUser = true;
     }
     res.status(200).json({
         list: r.sort((a, b) => {
@@ -262,7 +258,7 @@ app.put("/requests/:id", jwtManager.middleware(), async (req, res) => {
     if (!doc) return res.status(404).json({ message: "Document not found..." });
 
     //Build chosen, send email
-    await transporter.sendMail({ from: "billy@andremor.dev", to: doc.email, subject: "Build request chosen for next video!", text: cmp.replace("<USERNAME>", doc.nickname).replace("<BUILD_REQUEST>", doc.build).replaceAll("<DOMAIN>", process.env.DOMAIN).replace("<YEAR>", new Date().getFullYear()) });
+    await transporter.sendMail({ from: process.env.SMTP_USERNAME, to: doc.email, subject: "Build request chosen for next video!", text: cmp.replace("<USERNAME>", doc.nickname).replace("<BUILD_REQUEST>", doc.build).replaceAll("<DOMAIN>", process.env.DOMAIN).replace("<YEAR>", new Date().getFullYear()) });
     return res.status(200).json({ message: "Build request marked as chosen and user has been notified by email" });
 });
 
@@ -277,7 +273,7 @@ app.delete("/requests/:id", jwtManager.middleware(), async (req, res) => {
     if (!doc) return res.status(404).json({ message: "Document not found..." });
 
     //Build request deleted, send email
-    if (!req.body.chosen_no_reason) await transporter.sendMail({ from: "billy@andremor.dev", to: doc.email, subject: "Build request deleted.", text: dmp.replace("<USERNAME>", doc.nickname).replace("<BUILD_REQUEST>", doc.build).replace("<REASON>", req.body.reason).replaceAll("<DOMAIN>", process.env.DOMAIN).replace("<YEAR>", new Date().getFullYear()) });
+    if (!req.body.chosen_no_reason) await transporter.sendMail({ from: process.env.SMTP_USERNAME, to: doc.email, subject: "Build request deleted.", text: dmp.replace("<USERNAME>", doc.nickname).replace("<BUILD_REQUEST>", doc.build).replace("<REASON>", req.body.reason).replaceAll("<DOMAIN>", process.env.DOMAIN).replace("<YEAR>", new Date().getFullYear()) });
     return res.status(200).json({ message: `Build request deleted${req.body.chosen_no_reason ? "" : " and user has been notified by email"}.` });
 });
 

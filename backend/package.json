@@ -2,6 +2,7 @@
   "name": "billy-backend",
   "version": "1.0.0",
   "description": "Billy's build requests website; backend",
+  "private": true,
   "author": {
     "name": "AndreMor",
     "url": "https://andremor.dev/",

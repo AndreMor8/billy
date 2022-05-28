@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/web-home.vue';
+import privacyPolicy from '../views/web-privacy-policy.vue';
 import web404 from '../views/web-404.vue';
 
 const routes = [
@@ -12,35 +13,33 @@ const routes = [
     path: '/verify',
     name: 'request-verify',
     component: async function () {
-      return await import("../views/request-verify.vue");
+      return await import('../views/request-verify.vue');
     }
   },
   {
     path: '/blacklist',
     name: 'request-blacklist',
     component: async function () {
-      return await import("../views/request-blacklist.vue");
+      return await import('../views/request-blacklist.vue');
     }
   },
   {
     path: '/requests',
     name: 'request-list',
     component: async function () {
-      return await import("../views/request-list.vue");
+      return await import('../views/request-list.vue');
     }
   },
   {
     path: '/privacy-policy',
     name: 'privacy-policy',
-    component: async function () {
-      return await import("../views/web-privacy-policy.vue");
-    }
+    component: privacyPolicy
   },
   {
     path: '/admin',
     name: 'admin-login',
     component: async function () {
-      return await import("../views/admin-login.vue");
+      return await import('../views/admin-login.vue');
     }
   },
   {

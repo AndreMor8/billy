@@ -9,7 +9,7 @@ html {
 }
 
 body {
-  background-image: url("./assets/background.png");
+  background-image: url("./assets/background.webp");
   background-attachment: fixed;
   background-size: cover;
   background-repeat: no-repeat;
