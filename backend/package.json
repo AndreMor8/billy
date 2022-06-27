@@ -18,17 +18,18 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@nickgatzos/is-email": "^2.0.0",
-    "croner": "^4.3.11",
+    "croner": "^4.3.14",
+    "discord.js": "^13.8.1",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
     "express-basic-auth": "^1.2.1",
     "express-jsonwebtoken": "^1.0.9",
-    "mongoose": "^6.3.4",
+    "mongoose": "^6.4.0",
     "nodemailer": "^6.7.5"
   },
   "devDependencies": {
-    "eslint": "^8.16.0",
+    "eslint": "^8.18.0",
     "eslint-plugin-import": "^2.26.0",
-    "nodemon": "^2.0.16"
+    "nodemon": "^2.0.18"
   }
 }

@@ -105,12 +105,12 @@
             <th v-if="admin">Delete</th>
           </tr>
         </thead>
-        <tbody v-for="req in list" :key="req._id">
+        <tbody v-for="req in list" :key="req._id" :style="req.chosen ? 'background-color: lightgreen' : ''">
           <tr>
             <td v-if="admin">{{ req.email }}</td>
-            <th>
-              {{ req.nickname }} <small v-if="req.fromUser">(yours)</small>
-            </th>
+            <td>
+              <b>{{ req.nickname }}</b> <small v-if="req.fromUser">(yours)</small><small v-if="admin">{{getAnonymity(req)}}</small>
+            </td>
             <td>{{ req.build }}</td>
             <td>
               <span v-if="req.chosen" class="icon"
@@ -244,6 +244,11 @@ export default {
     closeModal() {
       this.modal.active = false;
       this.modal.selected = null;
+    },
+    getAnonymity(doc) {
+      if(doc.anonymity === 0) return "";
+      if(doc.anonymity === 1 && doc.chosen) return "";
+      return `(private: ${doc.anonymity})`
     },
     chooseRequest(id) {
       const pr = confirm("Are you sure? Make sure you wrote it down");

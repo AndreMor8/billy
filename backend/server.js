@@ -10,12 +10,14 @@ import isEmail from '@nickgatzos/is-email';
 import requests from './models/requests.js';
 import requestList from './models/request-list.js';
 import mailBlacklist from './models/mail-blacklist.js';
+import { MessageEmbed, WebhookClient } from 'discord.js';
 process.on("unhandledRejection", (err) => {
     console.error(err);
 });
+const webhook = new WebhookClient({ url: process.env.WEBHOOK_URL }, { allowedMentions: { parse: [] } });
 const users = {};
-if (process.env.NODE_ENV === "development") users["dev"] = process.env.DEV_ADMIN_PASS;
-else users["billy"] = process.env.ADMIN_PASS;
+if (process.env.NODE_ENV === "development") users[process.env.DEV_ADMIN_USER] = process.env.DEV_ADMIN_PASS;
+else users[process.env.ADMIN_USER] = process.env.ADMIN_PASS;
 
 const vmp = readFileSync("./verification_message.txt", "utf8");
 const cmp = readFileSync("./chosen_message.txt", "utf8");
@@ -38,6 +40,13 @@ const transporter = nodemailer.createTransport({
         pass: process.env.SMTP_PASSWORD,
     },
 });
+
+function getPublicNickname(doc) {
+    if (doc.anonymity === 0) return doc.nickname;
+    if (doc.anonymity === 1 && doc.chosen) return doc.nickname;
+    return "<redacted>";
+}
+
 const app = express();
 app.use(express.json());
 app.use((req, res, next) => {
@@ -101,6 +110,16 @@ app.post("/do-request", async (req, res) => {
                 if (!doc) return res.status(404).json({ message: "Can't find that request... Maybe I'm broken or Billy deleted the requests. Returning to blank form...", clearToken: true });
                 if (!doc.chosen) {
                     await requests.findByIdAndUpdate(data.doc_id, { $set: { nickname: req.body.nickname, anonymity: req.body.anonymity, build: req.body.build, additional: req.body.additional } }, { new: true, lean: true });
+                    await webhook.send({
+                        embeds: [
+                            new MessageEmbed()
+                                .setTitle("Build request modified")
+                                .setColor("DARK_BLUE")
+                                .addField("Public nickname", getPublicNickname(req.body))
+                                .addField("Windows build", req.body.build)
+                                .setDescription(req.body.additional || "")
+                        ]
+                    }).catch(console.log);
                     return res.status(200).json({ message: "Build request updated!" });
                 }
             }
@@ -128,7 +147,16 @@ app.post("/do-request", async (req, res) => {
 
 app.delete("/do-request", jwtManager.middleware(), async (req, res) => {
     const doc = await requests.findByIdAndDelete(req.user.doc_id).lean();
-    if (doc) return res.status(200).json({ message: "Request deleted" });
+    if (doc) {
+        await webhook.send({
+            embeds: [new MessageEmbed()
+                .setTitle("Build request deleted at user request")
+                .setColor("ORANGE")
+                .addField("Public nickname", getPublicNickname(doc))
+                .addField("Windows build", doc.build)]
+        }).catch(console.log);
+        return res.status(200).json({ message: "Request deleted" });
+    }
     else res.status(404).json({ message: "Request not found...", clearToken: true });
 });
 
@@ -143,14 +171,35 @@ app.post("/verify", async (req, res) => {
         if (doc && !doc.chosen) {
             await requests.findByIdAndUpdate(data.existing_doc, { $set: { email: data.email, nickname: data.nickname, anonymity: data.anonymity, build: data.build, additional: data.additional } }, { new: true, lean: true })
             temp_tokens.delete(req.body.token);
+            await webhook.send({
+                embeds: [
+                    new MessageEmbed()
+                        .setTitle("Build request modified")
+                        .setColor("DARK_BLUE")
+                        .addField("Public nickname", getPublicNickname(data))
+                        .addField("Windows build", data.build)
+                        .setDescription(data.additional || "")
+                ]
+            }).catch(console.log);
             return res.status(200).json({ message: "Request modified.", token: jwtManager.sign({ doc_id: doc._id }) });
         }
     }
     const doc = await requests.findOne({ email: { $eq: data.email }, chosen: false });
     if (doc) {
+
         if (!doc.ips.includes(data.ip)) await doc.updateOne({ $push: { ips: data.ip }, $set: { nickname: data.nickname, anonymity: data.anonymity, build: data.build, additional: data.additional } });
         else await doc.updateOne({ $set: { nickname: data.nickname, anonymity: data.anonymity, build: data.build, additional: data.additional } });
         temp_tokens.delete(req.body.token);
+        await webhook.send({
+            embeds: [
+                new MessageEmbed()
+                    .setTitle("Build request modified")
+                    .setColor("DARK_BLUE")
+                    .addField("Public nickname", getPublicNickname(data))
+                    .addField("Windows build", data.build)
+                    .setDescription(data.additional || "")
+            ]
+        }).catch(console.log);
         return res.status(200).json({ message: "Request modified.", token: jwtManager.sign({ doc_id: doc._id }) });
     }
     const list = await requestList.findOne({ enabled: true }).lean();
@@ -166,6 +215,16 @@ app.post("/verify", async (req, res) => {
         chosen: false
     });
     temp_tokens.delete(req.body.token);
+    await webhook.send({
+        embeds: [
+            new MessageEmbed()
+                .setTitle("Build request created")
+                .setColor("BLUE")
+                .addField("Public nickname", getPublicNickname(data))
+                .addField("Windows build", data.build)
+                .setDescription(data.additional || "")
+        ]
+    }).catch(console.log);
     return res.status(200).json({ message: "Request created.", token: jwtManager.sign({ doc_id: new_doc._id }) });
 });
 
@@ -211,7 +270,7 @@ app.get("/requests", async (req, res) => {
         if (pre_token[0] === "Bearer") {
             token = jwtManager.verify(pre_token[1] || "");
         }
-    } catch (_e) { null; }
+    } catch { null; }
     const list = await requestList.findOne({ enabled: true }).lean();
     if (!list) return res.status(403).send({ message: "Without request list...", admin: token?.admin || false });
     const projection = { request_list_id: 0, ips: 0 };
@@ -259,6 +318,15 @@ app.put("/requests/:id", jwtManager.middleware(), async (req, res) => {
 
     //Build chosen, send email
     await transporter.sendMail({ from: process.env.SMTP_USERNAME, to: doc.email, subject: "Build request chosen for next video!", text: cmp.replace("<USERNAME>", doc.nickname).replace("<BUILD_REQUEST>", doc.build).replaceAll("<DOMAIN>", process.env.DOMAIN).replace("<YEAR>", new Date().getFullYear()) });
+    await webhook.send({
+        embeds: [
+            new MessageEmbed()
+                .setTitle("Build request chosen!")
+                .setColor("GREEN")
+                .addField("Public nickname", getPublicNickname(doc))
+                .addField("Windows build", doc.build)
+        ]
+    }).catch(console.log);
     return res.status(200).json({ message: "Build request marked as chosen and user has been notified by email" });
 });
 
@@ -274,6 +342,16 @@ app.delete("/requests/:id", jwtManager.middleware(), async (req, res) => {
 
     //Build request deleted, send email
     if (!req.body.chosen_no_reason) await transporter.sendMail({ from: process.env.SMTP_USERNAME, to: doc.email, subject: "Build request deleted.", text: dmp.replace("<USERNAME>", doc.nickname).replace("<BUILD_REQUEST>", doc.build).replace("<REASON>", req.body.reason).replaceAll("<DOMAIN>", process.env.DOMAIN).replace("<YEAR>", new Date().getFullYear()) });
+    await webhook.send({
+        embeds: [
+            new MessageEmbed()
+                .setTitle("Build request deleted by Billy")
+                .setColor("RED")
+                .addField("Public nickname", getPublicNickname(doc))
+                .addField("Windows build", doc.build)
+                .addField("Reason", req.body.reason || "Deleting previous chosen request...")
+        ]
+    }).catch(console.log);
     return res.status(200).json({ message: `Build request deleted${req.body.chosen_no_reason ? "" : " and user has been notified by email"}.` });
 });
 
