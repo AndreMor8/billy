@@ -114,7 +114,7 @@
             <div class="control">
               <textarea
                 class="textarea is-info"
-                placeholder="Additional info"
+                placeholder="Additional info (optional)"
                 v-model="form.additional"
                 :disabled="sended"
               />

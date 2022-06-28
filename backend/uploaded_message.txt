@@ -1,12 +1,11 @@
 Hi <USERNAME>!
 
-Your build request "<BUILD_REQUEST>" has been removed from the list by Billy O'Reilly.
+Your build request "<BUILD_REQUEST>" has been completed by Billy O'Reilly!
 
-Reason:
-<REASON>
+<VIDEOINFO>
 
 ---------
-You can send another request again at <DOMAIN>.
+We hope you enjoy it.
 
 The email you entered on this website has been deleted from our database
 (and also your nickname, if you chose to keep it private forever).

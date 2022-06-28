@@ -3,7 +3,7 @@ Hi <USERNAME>!
 I inform you that your build request "<BUILD_REQUEST>" has been chosen to be the next Billy O'Reilly video!
 
 Congratulations!
-Remember to subscribe and click the bell (Notifications: All) so you don't miss this next video :)
+Remember to subscribe and click the bell (Notifications: All) on Billy's channel so you don't miss this next video :)
 
 Automated message,
 <DOMAIN>

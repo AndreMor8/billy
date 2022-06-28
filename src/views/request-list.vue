@@ -101,15 +101,21 @@
             <th>Public nickname</th>
             <th>Build requested</th>
             <th>Chosen for next video?</th>
-            <th>Additional text</th>
-            <th v-if="admin">Delete</th>
+            <th>Additional info</th>
+            <th v-if="admin">Action</th>
           </tr>
         </thead>
-        <tbody v-for="req in list" :key="req._id" :style="req.chosen ? 'background-color: lightgreen' : ''">
+        <tbody
+          v-for="req in list"
+          :key="req._id"
+          :style="req.chosen ? 'background-color: lightgreen' : ''"
+        >
           <tr>
             <td v-if="admin">{{ req.email }}</td>
             <td>
-              <b>{{ req.nickname }}</b> <small v-if="req.fromUser">(yours)</small><small v-if="admin">{{getAnonymity(req)}}</small>
+              <b>{{ req.nickname }}</b
+              >&nbsp;<small v-if="req.fromUser">(yours)</small
+              ><small v-if="admin">{{ getAnonymity(req) }}</small>
             </td>
             <td>{{ req.build }}</td>
             <td>
@@ -125,7 +131,7 @@
                 <div class="modal-background"></div>
                 <div class="modal-card">
                   <header class="modal-card-head">
-                    <p class="modal-card-title">Additional</p>
+                    <p class="modal-card-title">Additional info</p>
                     <button
                       @click="req.additional_modal_active = false"
                       class="delete"
@@ -146,13 +152,22 @@
                 @click="req.additional_modal_active = true"
                 v-if="req.additional"
                 ><span class="icon"
-                  ><font-awesome-icon :icon="['fas', 'align-left']" /></span></a
+                  ><font-awesome-icon
+                    title="Show additional info"
+                    :icon="['fas', 'align-left']" /></span></a
               ><span v-else>-</span>
             </td>
             <td v-if="admin">
               <a @click="deleteRequest(req._id, req.chosen)" v-if="!deleting"
                 ><span class="icon"
-                  ><font-awesome-icon :icon="['fas', 'trash-can']" /></span
+                  ><font-awesome-icon
+                    title="Mark as completed"
+                    v-if="req.chosen"
+                    :icon="['fas', 'flag-checkered']" />
+                  <font-awesome-icon
+                    title="Delete"
+                    v-else
+                    :icon="['fas', 'trash-can']" /></span
               ></a>
               <span v-else>...</span>
             </td>
@@ -215,9 +230,9 @@ export default {
         });
     },
     removeMailFromBlacklist() {
-      this.buttonBlActive = false;
       const email = prompt("Email to remove from blacklist", "");
       if (email) {
+        this.buttonBlActive = false;
         return this.axios
           .delete(`${window.apiDomain}/blacklist`, {
             headers: {
@@ -228,7 +243,7 @@ export default {
           .then((e) => alert(e.data.message))
           .catch((e) => alert(e.response?.data?.message || e.toString()))
           .finally(() => (this.buttonBlActive = true));
-      } else this.buttonBlActive = true;
+      }
     },
     openModal() {
       const list = this.list.filter((e) => !e.chosen);
@@ -246,9 +261,9 @@ export default {
       this.modal.selected = null;
     },
     getAnonymity(doc) {
-      if(doc.anonymity === 0) return "";
-      if(doc.anonymity === 1 && doc.chosen) return "";
-      return `(private: ${doc.anonymity})`
+      if (doc.anonymity === 0) return "";
+      if (doc.anonymity === 1 && doc.chosen) return "";
+      return `(private: ${doc.anonymity})`;
     },
     chooseRequest(id) {
       const pr = confirm("Are you sure? Make sure you wrote it down");
@@ -288,26 +303,18 @@ export default {
       this.modal.sending = false;
     },
     deleteRequest(id, chosen) {
-      let reason;
-      if (chosen) {
-        const pr = confirm(
-          "Are you sure? Chosen requests doesn't make email notifications."
-        );
-        if (!pr) return;
-      } else {
-        reason = prompt("Reason for removal", "");
-        if (!reason) return alert("You need a reason...");
-      }
-      const data = {};
-      if (chosen) data.chosen_no_reason = true;
-      else data.reason = reason;
+      const reason = prompt(
+        (chosen ? "Video info" : "Reason for removal") + " (required)",
+        ""
+      );
+      if (!reason) return;
       this.deleting = true;
       return this.axios
         .delete(`${window.apiDomain}/requests/${id}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access-token")}`,
           },
-          data,
+          data: { reason },
         })
         .then(async (e) => {
           alert(e.data.message);
@@ -338,8 +345,9 @@ export default {
           )
           .then((e) => {
             alert(e.data.message);
-            this.getRequests();
             this.buttonResetActive = true;
+            this.loaded = false;
+            this.getRequests();
           })
           .catch((e) => {
             alert(e.response?.data?.message || e.toString());

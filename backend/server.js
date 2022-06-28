@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import isEmail from '@nickgatzos/is-email';
+import { isIP } from 'is-ip';
 import requests from './models/requests.js';
 import requestList from './models/request-list.js';
 import mailBlacklist from './models/mail-blacklist.js';
@@ -22,6 +23,7 @@ else users[process.env.ADMIN_USER] = process.env.ADMIN_PASS;
 const vmp = readFileSync("./verification_message.txt", "utf8");
 const cmp = readFileSync("./chosen_message.txt", "utf8");
 const dmp = readFileSync("./delete_message.txt", "utf8");
+const ump = readFileSync("./uploaded_message.txt", "utf8");
 const jwtManager = new JwtExpress({
     jwt: {
         secret: process.env.SECRET,
@@ -48,6 +50,7 @@ function getPublicNickname(doc) {
 }
 
 function getDomainCorsAccess(origin) {
+    //well, the thing is this works, xD
     try {
         const original = new URL(origin);
         origin = new URL(origin);
@@ -59,9 +62,11 @@ function getDomainCorsAccess(origin) {
                     const n = url.host.split(".")
                     n.shift();
                     url = new URL(url.protocol + "//" + n.join("."));
-                    const m = origin.host.split(".");
-                    m.shift()
-                    origin = new URL(origin.protocol + "//" + m.join("."));
+                    if (!isIP(origin.hostname)) {
+                        const m = origin.host.split(".");
+                        m.shift();
+                        origin = new URL(origin.protocol + "//" + m.join("."));
+                    }
                 }
                 if (origin.origin === url.origin) return original.origin;
                 else continue;
@@ -361,26 +366,60 @@ app.put("/requests/:id", jwtManager.middleware(), async (req, res) => {
 app.delete("/requests/:id", jwtManager.middleware(), async (req, res) => {
     if (!req.user.admin) return res.status(403).json({ message: "Unauthorized token!" });
     if (!req.params.id) return res.status(400).json({ message: "Need a document ID." });
-    if (!req.body.chosen_no_reason) {
-        if (!req.body.reason) return res.status(400).json({ message: "You need a reason!" });
-        if (typeof req.body.reason !== "string") return res.status(400).json({ message: "You need a reason!" });
-    }
+    if (!req.body.reason) return res.status(400).json({ message: "You need a reason! (video info if deleting chosen request)" });
+    if (typeof req.body.reason !== "string") return res.status(400).json({ message: "You need a reason! (video info if deleting chosen request)" });
+
     const doc = await requests.findByIdAndDelete(req.params.id).lean();
     if (!doc) return res.status(404).json({ message: "Document not found..." });
 
     //Build request deleted, send email
-    if (!req.body.chosen_no_reason) await transporter.sendMail({ from: process.env.SMTP_USERNAME, to: doc.email, subject: "Build request deleted.", text: dmp.replace("<USERNAME>", doc.nickname).replace("<BUILD_REQUEST>", doc.build).replace("<REASON>", req.body.reason).replaceAll("<DOMAIN>", process.env.DOMAIN).replace("<YEAR>", new Date().getFullYear()) });
-    await webhook.send({
-        embeds: [
-            new MessageEmbed()
-                .setTitle("Build request deleted by Billy")
-                .setColor("RED")
-                .addField("Public nickname", getPublicNickname(doc))
-                .addField("Windows build", doc.build)
-                .addField("Reason", req.body.reason || "Deleting previous chosen request...")
-        ]
-    }).catch(console.log);
-    return res.status(200).json({ message: `Build request deleted${req.body.chosen_no_reason ? "" : " and user has been notified by email"}.` });
+    const embed = new MessageEmbed()
+        .addField("Public nickname", getPublicNickname(doc))
+        .addField("Windows build", doc.build)
+
+    if (doc.chosen) {
+        const text = ump
+            .replace("<USERNAME>", doc.nickname)
+            .replace("<BUILD_REQUEST>", doc.build)
+            .replace("<VIDEOINFO>", req.body.reason)
+            .replaceAll("<DOMAIN>", process.env.DOMAIN)
+            .replace("<YEAR>", new Date().getFullYear());
+
+        await transporter.sendMail({
+            from: process.env.SMTP_USERNAME,
+            to: doc.email,
+            subject: "Build request completed!",
+            text
+        });
+
+        embed.setColor("GOLD")
+            .setTitle("Build request completed!")
+            .addField("Video info", req.body.reason)
+
+        await webhook.send({ embeds: [embed] }).catch(console.log);
+    } else {
+        const text = dmp
+            .replace("<USERNAME>", doc.nickname)
+            .replace("<BUILD_REQUEST>", doc.build)
+            .replace("<REASON>", req.body.reason)
+            .replaceAll("<DOMAIN>", process.env.DOMAIN)
+            .replace("<YEAR>", new Date().getFullYear());
+
+        await transporter.sendMail({
+            from: process.env.SMTP_USERNAME,
+            to: doc.email,
+            subject: "Build request deleted.",
+            text
+        });
+
+        embed.setColor("RED")
+            .setTitle("Build request deleted by Billy")
+            .addField("Reason", req.body.reason)
+
+        await webhook.send({ embeds: [embed] }).catch(console.log);
+    }
+
+    return res.status(200).json({ message: `Build request deleted and user has been notified by email.` });
 });
 
 const listener = app.listen(process.env.PORT || 3075, () => {
