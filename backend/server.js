@@ -47,10 +47,38 @@ function getPublicNickname(doc) {
     return "<redacted>";
 }
 
+function getDomainCorsAccess(origin) {
+    try {
+        const original = new URL(origin);
+        origin = new URL(origin);
+        const arr = process.env.DOMAINS_CORS?.split(",") || [];
+        for (const pre_url of arr) {
+            try {
+                let url = new URL(pre_url);
+                while (url.host.startsWith("*")) {
+                    const n = url.host.split(".")
+                    n.shift();
+                    url = new URL(url.protocol + "//" + n.join("."));
+                    const m = origin.host.split(".");
+                    m.shift()
+                    origin = new URL(origin.protocol + "//" + m.join("."));
+                }
+                if (origin.origin === url.origin) return original.origin;
+                else continue;
+            } catch {
+                continue;
+            }
+        }
+        return process.env.DOMAIN || "";
+    } catch {
+        return process.env.DOMAIN || "";
+    }
+}
+
 const app = express();
 app.use(express.json());
 app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", process.env.NODE_ENV === "development" ? "*" : (req.headers["referer"]?.startsWith("http://" + process.env.IP_DEV) ? "http://" + process.env.IP_DEV : process.env.DOMAIN));
+    res.setHeader("Access-Control-Allow-Origin", process.env.NODE_ENV === "development" ? "*" : getDomainCorsAccess(req.headers["origin"]));
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
     next();

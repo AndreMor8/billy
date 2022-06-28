@@ -1,9 +1,9 @@
 <template>
-  <div v-if="loaded" align="center">
-    <div class="box main" style="max-width: 23em">
+  <div align="center">
+    <div class="box main" style="max-width: 27em">
       <h1 class="title">Build requests website</h1>
     </div>
-    <div class="box main" style="max-width: 47em">
+    <div class="box main" style="max-width: 50em">
       <p>
         Here you will be able to choose a build of Windows that you would like
         Billy to test in his next video.
@@ -13,179 +13,181 @@
         build in his next video.
       </p>
     </div>
-    <form
-      v-if="!no_request_list && !admin"
-      @submit.prevent="sended ? undefined : sendRequest()"
-    >
-      <div class="box main" style="max-width: 58em">
-        <h3 v-if="with_token" class="subtitle">
-          Welcome back. Here you can edit your request
-        </h3>
-        <h3 v-else class="subtitle">
-          Please complete the following information
-        </h3>
-        <div class="field">
-          <div class="control has-icons-left">
-            <input
-              class="input is-danger"
-              type="email"
-              placeholder="Contact e-mail"
-              :disabled="with_token || sended"
-              v-model="form.email"
-              required
-            />
-            <span class="icon is-small is-left">
-              <font-awesome-icon :icon="['fas', 'envelope']" />
-            </span>
-          </div>
-          <p class="help" align="left" v-if="!with_token">
-            This email will never be published and will only be used to notify
-            you of your request.
-          </p>
-        </div>
-        <div class="field">
-          <div class="control has-icons-left">
-            <input
-              class="input is-warning"
-              type="text"
-              placeholder="Nickname (can also be a YouTube or Discord username)"
-              v-model="form.nickname"
-              :disabled="sended"
-              required
-            />
-            <span class="icon is-small is-left">
-              <font-awesome-icon :icon="['fas', 'user']" />
-            </span>
-          </div>
-        </div>
-        <div class="field" align="left">
-          <div class="control">
-            <label class="radio">
+    <div v-if="loaded">
+      <form
+        v-if="!no_request_list && !admin"
+        @submit.prevent="sended ? undefined : sendRequest()"
+      >
+        <div class="box main" style="max-width: 58em">
+          <h3 v-if="with_token" class="subtitle">
+            Welcome back. Here you can edit your request
+          </h3>
+          <h3 v-else class="subtitle">
+            Please complete the following information
+          </h3>
+          <div class="field">
+            <div class="control has-icons-left">
               <input
-                type="radio"
-                name="anonymity"
-                v-model="form.anonymity"
-                :value="0"
-                checked
+                class="input is-danger"
+                type="email"
+                placeholder="Contact e-mail"
+                :disabled="with_token || sended"
+                v-model="form.email"
+                required
+              />
+              <span class="icon is-small is-left">
+                <font-awesome-icon :icon="['fas', 'envelope']" />
+              </span>
+            </div>
+            <p class="help" align="left" v-if="!with_token">
+              This email will never be published and will only be used to notify
+              you of your request.
+            </p>
+          </div>
+          <div class="field">
+            <div class="control has-icons-left">
+              <input
+                class="input is-warning"
+                type="text"
+                placeholder="Nickname (can also be a YouTube or Discord username)"
+                v-model="form.nickname"
+                :disabled="sended"
+                required
+              />
+              <span class="icon is-small is-left">
+                <font-awesome-icon :icon="['fas', 'user']" />
+              </span>
+            </div>
+          </div>
+          <div class="field" align="left">
+            <div class="control">
+              <label class="radio">
+                <input
+                  type="radio"
+                  name="anonymity"
+                  v-model="form.anonymity"
+                  :value="0"
+                  checked
+                  :disabled="sended"
+                />
+                -> Make this name public <strong>all time</strong> </label
+              ><br />
+              <label class="radio">
+                <input
+                  type="radio"
+                  name="anonymity"
+                  v-model="form.anonymity"
+                  :value="1"
+                  :disabled="sended"
+                />
+                -> Make this name public
+                <strong>only if my request is chosen</strong> </label
+              ><br />
+              <label class="radio">
+                <input
+                  type="radio"
+                  name="anonymity"
+                  v-model="form.anonymity"
+                  :value="2"
+                  :disabled="sended"
+                />
+                -> <strong>Never</strong> make this name public
+              </label>
+            </div>
+          </div>
+          <div class="field">
+            <div class="control has-icons-left">
+              <input
+                class="input is-success"
+                type="text"
+                placeholder="Windows version and build (eg. Windows Whistler build 2462)"
+                v-model="form.build"
+                :disabled="sended"
+                required
+              />
+              <span class="icon is-small is-left">
+                <font-awesome-icon :icon="['fab', 'windows']" />
+              </span>
+            </div>
+          </div>
+          <div class="field">
+            <div class="control">
+              <textarea
+                class="textarea is-info"
+                placeholder="Additional info"
+                v-model="form.additional"
                 :disabled="sended"
               />
-              -> Make this name public <strong>all time</strong> </label
-            ><br />
-            <label class="radio">
-              <input
-                type="radio"
-                name="anonymity"
-                v-model="form.anonymity"
-                :value="1"
-                :disabled="sended"
-              />
-              -> Make this name public
-              <strong>only if my request is chosen</strong> </label
-            ><br />
-            <label class="radio">
-              <input
-                type="radio"
-                name="anonymity"
-                v-model="form.anonymity"
-                :value="2"
-                :disabled="sended"
-              />
-              -> <strong>Never</strong> make this name public
-            </label>
+            </div>
+          </div>
+          <br v-if="sended_text !== 'Please wait...' || sended" />
+          <span
+            v-if="sended_text !== 'Please wait...' || sended"
+            class="form-span"
+            >{{ sended_text }}</span
+          >
+          <br v-if="sended_text !== 'Please wait...' || sended" />
+          <br v-if="sended_text !== 'Please wait...' || sended" />
+          <div class="field is-grouped buttons">
+            <div class="control">
+              <button
+                type="submit"
+                class="button is-link"
+                :disabled="sended || null"
+              >
+                <span class="icon">
+                  <font-awesome-icon :icon="['fas', 'paper-plane']"
+                /></span>
+                <span>{{ with_token ? "Modify" : "Submit" }}</span>
+              </button>
+            </div>
+            <div class="control">
+              <button
+                type="button"
+                @click="sended ? undefined : clear()"
+                class="button is-link is-light"
+                :disabled="sended || null"
+              >
+                <span class="icon">
+                  <font-awesome-icon :icon="['fas', 'broom']"
+                /></span>
+                <span>Clear</span>
+              </button>
+            </div>
+            <div class="control">
+              <button
+                type="button"
+                v-if="with_token"
+                @click="sended ? undefined : deleteRequest()"
+                class="button is-danger"
+                :disabled="sended || null"
+              >
+                <span class="icon">
+                  <font-awesome-icon :icon="['fas', 'trash-can']"
+                /></span>
+                <span>Delete</span>
+              </button>
+            </div>
           </div>
         </div>
-        <div class="field">
-          <div class="control has-icons-left">
-            <input
-              class="input is-success"
-              type="text"
-              placeholder="Windows version and build (eg. Windows Whistler build 2462)"
-              v-model="form.build"
-              :disabled="sended"
-              required
-            />
-            <span class="icon is-small is-left">
-              <font-awesome-icon :icon="['fab', 'windows']" />
-            </span>
-          </div>
-        </div>
-        <div class="field">
-          <div class="control">
-            <textarea
-              class="textarea is-info"
-              placeholder="Additional info"
-              v-model="form.additional"
-              :disabled="sended"
-            />
-          </div>
-        </div>
-        <br v-if="sended_text !== 'Please wait...' || sended" />
-        <span
-          v-if="sended_text !== 'Please wait...' || sended"
-          class="form-span"
-          >{{ sended_text }}</span
-        >
-        <br v-if="sended_text !== 'Please wait...' || sended" />
-        <br v-if="sended_text !== 'Please wait...' || sended" />
-        <div class="field is-grouped buttons">
-          <div class="control">
-            <button
-              type="submit"
-              class="button is-link"
-              :disabled="sended || null"
-            >
-              <span class="icon">
-                <font-awesome-icon :icon="['fas', 'paper-plane']"
-              /></span>
-              <span>{{ with_token ? "Modify" : "Submit" }}</span>
-            </button>
-          </div>
-          <div class="control">
-            <button
-              type="button"
-              @click="sended ? undefined : clear()"
-              class="button is-link is-light"
-              :disabled="sended || null"
-            >
-              <span class="icon">
-                <font-awesome-icon :icon="['fas', 'broom']"
-              /></span>
-              <span>Clear</span>
-            </button>
-          </div>
-          <div class="control">
-            <button
-              type="button"
-              v-if="with_token"
-              @click="sended ? undefined : deleteRequest()"
-              class="button is-danger"
-              :disabled="sended || null"
-            >
-              <span class="icon">
-                <font-awesome-icon :icon="['fas', 'trash-can']"
-              /></span>
-              <span>Delete</span>
-            </button>
-          </div>
-        </div>
+      </form>
+      <div class="box main" style="max-width: 58em" v-else-if="admin">
+        <h2 class="subtitle">
+          You are logged in as administrator, use the Requests button in the
+          navbar to control them.
+        </h2>
       </div>
-    </form>
-    <div class="box main" style="max-width: 58em" v-else-if="admin">
-      <h2 class="subtitle">
-        You are logged in as administrator, use the Requests button in the
-        navbar to control them.
-      </h2>
+      <div class="box main" style="max-width: 58em" v-else>
+        <h2 class="subtitle">
+          There is no active request list; maybe Billy isn't getting requests
+          right now.
+        </h2>
+      </div>
     </div>
-    <div class="box main" style="max-width: 58em" v-else>
-      <h2 class="subtitle">
-        There is no active request list; maybe Billy isn't getting requests
-        right now.
-      </h2>
-    </div>
-  </div>
-  <div align="center" v-else>
-    <div class="box main" style="max-width: 50em">
-      <h1 class="title">Loading form...</h1>
+    <div align="center" v-else>
+      <div class="box main" style="max-width: 58em">
+        <h1 class="title">Loading form...</h1>
+      </div>
     </div>
   </div>
 </template>
