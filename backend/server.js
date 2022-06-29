@@ -142,6 +142,7 @@ app.post("/do-request", async (req, res) => {
                 const doc = await requests.findById(data.doc_id).lean();
                 if (!doc) return res.status(404).json({ message: "Can't find that request... Maybe I'm broken or Billy deleted the requests. Returning to blank form...", clearToken: true });
                 if (!doc.chosen) {
+                    if ((req.body.nickname === doc.nickname) && (req.body.anonymity === doc.anonymity) && (req.body.build === doc.build) && (req.body.additional === doc.additional)) return res.status(200).json({ message: "Without changes, nothing to do." });
                     await requests.findByIdAndUpdate(data.doc_id, { $set: { nickname: req.body.nickname, anonymity: req.body.anonymity, build: req.body.build, additional: req.body.additional } }, { new: true, lean: true });
                     await webhook.send({
                         embeds: [

@@ -109,6 +109,7 @@
                 <font-awesome-icon :icon="['fab', 'windows']" />
               </span>
             </div>
+            <p class="help" align="left">Only 1 build per request!</p>
           </div>
           <div class="field">
             <div class="control">
@@ -215,6 +216,12 @@ export default {
         additional: "",
         resend: false,
       },
+      original: {
+        nickname: "",
+        anonymity: 0,
+        build: "",
+        additional: "",
+      },
       admin: false,
       with_token: false,
       loaded: false,
@@ -251,10 +258,10 @@ export default {
             this.admin = true;
           } else {
             this.form.email = e.data.email;
-            this.form.nickname = e.data.nickname;
-            this.form.anonymity = e.data.anonymity;
-            this.form.build = e.data.build;
-            this.form.additional = e.data.additional;
+            this.form.nickname = this.original.nickname = e.data.nickname;
+            this.form.anonymity = this.original.anonymity = e.data.anonymity;
+            this.form.build = this.original.build = e.data.build;
+            this.form.additional = this.original.additional = e.data.additional;
           }
         })
         .catch((e) => {
@@ -264,6 +271,13 @@ export default {
         });
     },
     sendRequest() {
+      if (
+        this.form.nickname === this.original.nickname &&
+        this.form.anonymity === this.original.anonymity &&
+        this.form.build === this.original.build &&
+        this.form.additional === this.original.additional
+      )
+        return (this.sended_text = "Without changes, nothing to do.");
       const options = {};
       if (this.with_token)
         options.headers = {
@@ -275,6 +289,10 @@ export default {
         .post(`${window.apiDomain}/do-request`, this.form, options)
         .then((e) => {
           this.sended_text = e.data.message;
+          this.original.nickname = this.form.nickname;
+          this.original.anonymity = this.form.anonymity;
+          this.original.build = this.form.build;
+          this.original.additional = this.form.additional;
           if (this.with_token) this.sended = false;
         })
         .catch((e) => {
@@ -304,6 +322,10 @@ export default {
             localStorage.removeItem("access-token");
             this.with_token = false;
             this.clear();
+            this.original.nickname = "";
+            this.original.anonymity = 0;
+            this.original.build = "";
+            this.original.additional = "";
             this.sended = false;
           })
           .catch((e) => {
