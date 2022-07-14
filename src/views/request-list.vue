@@ -1,11 +1,15 @@
 <template>
   <div v-if="loaded && !error" align="center">
-    <div class="box main" style="max-width: 17em">
+    <div class="box main" style="max-width: 18em">
       <h1 class="title">List of requests</h1>
     </div>
-    <div v-if="admin" class="box main" style="max-width: 38em">
+    <div v-if="admin" class="box main" style="max-width: 39em">
       <div class="buttons">
-        <button @click="openModal" class="button is-success">
+        <button
+          @click="modal.sending ? undefined : openModal()"
+          class="button is-success"
+          :disabled="modal.sending || null"
+        >
           <span class="icon">
             <font-awesome-icon :icon="['fas', 'shuffle']" />
           </span>
@@ -22,9 +26,15 @@
           <span>Remove an email from blacklist</span>
         </button>
         <button
-          @click="buttonResetActive ? resetAdmin() : undefined"
+          @click="
+            buttonResetActive
+              ? modal.sending
+                ? undefined
+                : resetAdmin()
+              : undefined
+          "
           class="button is-danger"
-          :disabled="!buttonResetActive || null"
+          :disabled="!buttonResetActive || modal.sending || null"
         >
           <span class="icon">
             <font-awesome-icon :icon="['fas', 'arrow-rotate-right']" />
@@ -119,9 +129,15 @@
             </td>
             <td>{{ req.build }}</td>
             <td>
-              <span v-if="req.chosen" class="icon"
-                ><font-awesome-icon :icon="['fas', 'circle-check']" /></span
-              ><span v-else>-</span>
+              <span v-if="req.chosen" class="icon">
+                <font-awesome-icon :icon="['fas', 'circle-check']" /> </span
+              ><a
+                v-else-if="admin && !modal.sending"
+                @click="modal.sending ? undefined : chooseRequest(req._id)"
+                ><span>
+                  <font-awesome-icon :icon="['fas', 'arrow-turn-up']" /> </span
+              ></a>
+              <span v-else>-</span>
             </td>
             <td>
               <div
@@ -151,23 +167,28 @@
               <a
                 @click="req.additional_modal_active = true"
                 v-if="req.additional"
-                ><span class="icon"
-                  ><font-awesome-icon
+                ><span class="icon">
+                  <font-awesome-icon
                     title="Show additional info"
-                    :icon="['fas', 'align-left']" /></span></a
+                    :icon="['fas', 'align-left']"
+                  /> </span></a
               ><span v-else>-</span>
             </td>
             <td v-if="admin">
-              <a @click="deleteRequest(req._id, req.chosen)" v-if="!deleting"
-                ><span class="icon"
-                  ><font-awesome-icon
+              <a
+                @click="deleteRequest(req._id, req.chosen)"
+                v-if="!deleting && !modal.sending"
+                ><span class="icon">
+                  <font-awesome-icon
                     title="Mark as completed"
                     v-if="req.chosen"
-                    :icon="['fas', 'flag-checkered']" />
+                    :icon="['fas', 'flag-checkered']"
+                  />
                   <font-awesome-icon
                     title="Delete"
                     v-else
-                    :icon="['fas', 'trash-can']" /></span
+                    :icon="['fas', 'trash-can']"
+                  /> </span
               ></a>
               <span v-else>...</span>
             </td>
@@ -309,6 +330,7 @@ export default {
       );
       if (!reason) return;
       this.deleting = true;
+      this.modal.sending = true;
       return this.axios
         .delete(`${window.apiDomain}/requests/${id}`, {
           headers: {
@@ -320,11 +342,13 @@ export default {
           alert(e.data.message);
           this.loaded = false;
           this.deleting = false;
+          this.modal.sending = false;
           return await this.getRequests();
         })
         .catch((e) => {
           alert(e.response?.data?.message || e.toString());
           this.deleting = false;
+          this.modal.sending = false;
         });
     },
     resetAdmin() {
@@ -333,6 +357,7 @@ export default {
       );
       if (pr) {
         this.buttonResetActive = false;
+        this.modal.sending = true;
         this.axios
           .put(
             `${window.apiDomain}/reset-admin`,
@@ -347,11 +372,13 @@ export default {
             alert(e.data.message);
             this.buttonResetActive = true;
             this.loaded = false;
+            this.modal.sending = false;
             this.getRequests();
           })
           .catch((e) => {
             alert(e.response?.data?.message || e.toString());
             this.buttonResetActive = true;
+            this.modal.sending = false;
           });
       }
     },

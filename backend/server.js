@@ -1,21 +1,24 @@
 import 'dotenv/config.js';
 import { readFileSync } from 'fs';
+import { MessageEmbed, WebhookClient } from 'discord.js';
 import express from 'express';
 import JwtExpress from 'express-jsonwebtoken';
 import basicAuth from 'express-basic-auth';
+import cors from 'cors';
 import mongoose from 'mongoose';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import isEmail from '@nickgatzos/is-email';
-import { isIP } from 'is-ip';
 import requests from './models/requests.js';
 import requestList from './models/request-list.js';
 import mailBlacklist from './models/mail-blacklist.js';
-import { MessageEmbed, WebhookClient } from 'discord.js';
+
 process.on("unhandledRejection", (err) => {
     console.error(err);
 });
+
 const webhook = new WebhookClient({ url: process.env.WEBHOOK_URL }, { allowedMentions: { parse: [] } });
+
 const users = {};
 if (process.env.NODE_ENV === "development") users[process.env.DEV_ADMIN_USER] = process.env.DEV_ADMIN_PASS;
 else users[process.env.ADMIN_USER] = process.env.ADMIN_PASS;
@@ -24,6 +27,7 @@ const vmp = readFileSync("./verification_message.txt", "utf8");
 const cmp = readFileSync("./chosen_message.txt", "utf8");
 const dmp = readFileSync("./delete_message.txt", "utf8");
 const ump = readFileSync("./uploaded_message.txt", "utf8");
+
 const jwtManager = new JwtExpress({
     jwt: {
         secret: process.env.SECRET,
@@ -33,6 +37,7 @@ const jwtManager = new JwtExpress({
         }
     }
 });
+
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_ADDRESS,
     port: 465,
@@ -49,45 +54,14 @@ function getPublicNickname(doc) {
     return "<redacted>";
 }
 
-function getDomainCorsAccess(origin) {
-    //well, the thing is this works, xD
-    try {
-        const original = new URL(origin);
-        origin = new URL(origin);
-        const arr = process.env.DOMAINS_CORS?.split(",") || [];
-        for (const pre_url of arr) {
-            try {
-                let url = new URL(pre_url);
-                while (url.host.startsWith("*")) {
-                    const n = url.host.split(".")
-                    n.shift();
-                    url = new URL(url.protocol + "//" + n.join("."));
-                    if (!isIP(origin.hostname)) {
-                        const m = origin.host.split(".");
-                        m.shift();
-                        origin = new URL(origin.protocol + "//" + m.join("."));
-                    }
-                }
-                if (origin.origin === url.origin) return original.origin;
-                else continue;
-            } catch {
-                continue;
-            }
-        }
-        return process.env.DOMAIN || "";
-    } catch {
-        return process.env.DOMAIN || "";
-    }
-}
-
 const app = express();
+app.use(cors({
+    origin: process.env.NODE_ENV === "development" ? "*" : ["https://billy-o-reilly.andremor.dev", (/^https:\/\/(.+\.)?billy\.pages\.dev$/), process.env.DEV_CORS],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE"]
+}));
+
 app.use(express.json());
-app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", process.env.NODE_ENV === "development" ? "*" : getDomainCorsAccess(req.headers["origin"]));
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-    next();
-});
 app.set("trust proxy", process.env.NODE_ENV !== "development");
 
 mongoose.connect(process.env.MDB_PATH).then(() => console.log("Connected to database")).catch(console.error);
@@ -106,7 +80,7 @@ app.get("/login-admin", basicAuth({
     const createRandomNum = Math.random().toString();
     const temp_token = crypto.createHash('sha1').update(dateForHash + createRandomNum).digest('hex');
     temp_tokens.set(temp_token, { admin: true });
-    res.redirect(`${process.env.DOMAIN}/admin?token=${temp_token}`);
+    res.redirect(`${process.env.NODE_ENV === "development" ? process.env.DEV_CORS : process.env.DOMAIN}/admin?token=${temp_token}`);
 });
 
 app.post("/login-admin", (req, res) => {

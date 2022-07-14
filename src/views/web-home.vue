@@ -110,12 +110,13 @@
               </span>
             </div>
             <p class="help" align="left">Only 1 build per request!</p>
+            <p class="help" align="left">Check <a href="https://www.youtube.com/playlist?list=PLUS6aV5qyWCkH9J5lAMjDfU2jZCrASZco" target="_blank">Billy's playlist</a> to make sure Billy hasn't done the build you ask for</p>
           </div>
           <div class="field">
             <div class="control">
               <textarea
                 class="textarea is-info"
-                placeholder="Additional info (optional)"
+                placeholder="Additional info (optional, will be public)"
                 v-model="form.additional"
                 :disabled="sended"
               />

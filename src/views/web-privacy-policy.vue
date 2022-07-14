@@ -1,6 +1,6 @@
 <template>
   <div align="center">
-    <div class="box main" style="max-width: 15em">
+    <div class="box main" style="max-width: 16em">
       <h1 class="title">Privacy policy</h1>
     </div>
     <div class="box main" style="max-width: 70em">
