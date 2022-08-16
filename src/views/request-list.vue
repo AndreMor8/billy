@@ -3,7 +3,11 @@
     <div class="box main" style="max-width: 18em">
       <h1 class="title">List of requests</h1>
     </div>
-    <div v-if="admin" class="box main" style="max-width: 54em; overflow: hidden;">
+    <div
+      v-if="admin"
+      class="box main"
+      style="max-width: 54em; overflow: hidden"
+    >
       <div class="buttons">
         <button
           @click="modal.sending ? undefined : openModal()"
@@ -20,7 +24,7 @@
           class="button is-info"
           :disabled="!buttonBlActive || null"
         >
-        <span class="icon">
+          <span class="icon">
             <font-awesome-icon :icon="['fas', 'user-slash']" />
           </span>
           <span>Add an email to blacklist</span>
@@ -222,7 +226,7 @@
 
 <style scoped>
 .buttons {
-  display: block !important
+  display: block !important;
 }
 </style>
 
@@ -271,12 +275,15 @@ export default {
       if (email) {
         this.buttonBlActive = false;
         return this.axios
-          .put(`${window.apiDomain}/blacklist`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("access-token")}`,
-            },
-            data: { email },
-          })
+          .put(
+            `${window.apiDomain}/blacklist`,
+            { email },
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("access-token")}`,
+              },
+            }
+          )
           .then((e) => alert(e.data.message))
           .catch((e) => alert(e.response?.data?.message || e.toString()))
           .finally(() => (this.buttonBlActive = true));
