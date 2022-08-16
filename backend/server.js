@@ -246,6 +246,18 @@ app.post("/blacklist", async (req, res) => {
     res.status(200).json({ message: "Added to mail blacklist." });
 });
 
+app.put("/blacklist", jwtManager.middleware(), async (req, res) => {
+    if (!req.user.admin) return res.status(403).json({ message: "Unauthorized token!" });
+    if (!req.body.email) return res.status(400).json({ message: "Specify an email." });
+    if (typeof req.body.email !== "string") return res.status(400).json({ message: "Specify an email." });
+
+    const doc = await mailBlacklist.findOne({ email: { $eq: req.body.email } }).lean();
+    if (doc) return res.status(404).json({ message: "This email is already on the blacklist" });
+    else await mailBlacklist.create({ email: req.body.email });
+
+    return res.status(200).json({ message: "Email added to blacklist!" });
+});
+
 app.delete("/blacklist", jwtManager.middleware(), async (req, res) => {
     if (!req.user.admin) return res.status(403).json({ message: "Unauthorized token!" });
     if (!req.body.email) return res.status(400).json({ message: "Specify an email." });

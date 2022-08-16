@@ -3,7 +3,7 @@
     <div class="box main" style="max-width: 18em">
       <h1 class="title">List of requests</h1>
     </div>
-    <div v-if="admin" class="box main" style="max-width: 39em">
+    <div v-if="admin" class="box main" style="max-width: 54em; overflow: hidden;">
       <div class="buttons">
         <button
           @click="modal.sending ? undefined : openModal()"
@@ -14,6 +14,16 @@
             <font-awesome-icon :icon="['fas', 'shuffle']" />
           </span>
           <span>Choose a build</span>
+        </button>
+        <button
+          @click="buttonBlActive ? addMailtoBlacklist() : undefined"
+          class="button is-info"
+          :disabled="!buttonBlActive || null"
+        >
+        <span class="icon">
+            <font-awesome-icon :icon="['fas', 'user-slash']" />
+          </span>
+          <span>Add an email to blacklist</span>
         </button>
         <button
           @click="buttonBlActive ? removeMailFromBlacklist() : undefined"
@@ -210,6 +220,12 @@
   </div>
 </template>
 
+<style scoped>
+.buttons {
+  display: block !important
+}
+</style>
+
 <script>
 export default {
   data() {
@@ -249,6 +265,22 @@ export default {
           this.error = this.response?.data?.message || e.toString();
           this.loaded = true;
         });
+    },
+    addMailtoBlacklist() {
+      const email = prompt("Email to add on blacklist", "");
+      if (email) {
+        this.buttonBlActive = false;
+        return this.axios
+          .put(`${window.apiDomain}/blacklist`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access-token")}`,
+            },
+            data: { email },
+          })
+          .then((e) => alert(e.data.message))
+          .catch((e) => alert(e.response?.data?.message || e.toString()))
+          .finally(() => (this.buttonBlActive = true));
+      }
     },
     removeMailFromBlacklist() {
       const email = prompt("Email to remove from blacklist", "");

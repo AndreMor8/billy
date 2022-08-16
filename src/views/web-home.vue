@@ -194,7 +194,7 @@
   </div>
 </template>
 
-<style>
+<style scoped>
 .form-span {
   padding: 3px;
   margin-top: 10px;
