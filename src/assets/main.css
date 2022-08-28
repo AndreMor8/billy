@@ -17,3 +17,7 @@ body {
 .main {
     background-color: whitesmoke;
 }
+
+.content {
+    white-space: pre-wrap;
+}

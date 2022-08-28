@@ -8,7 +8,7 @@
       class="box main"
       style="max-width: 54em; overflow: hidden"
     >
-      <div class="buttons">
+      <div class="buttons" style="justify-content: center">
         <button
           @click="modal.sending ? undefined : openModal()"
           class="button is-success"
@@ -77,7 +77,7 @@
             <small>{{ modal.selected.nickname }}</small>
           </p>
         </section>
-        <footer class="modal-card-foot">
+        <footer class="modal-card-foot" style="justify-content: center">
           <button
             @click="
               modal.sending ? undefined : chooseRequest(modal.selected._id)
@@ -117,6 +117,22 @@
         </footer>
       </div>
     </div>
+    <div class="modal" :class="{ 'is-active': additional_modal.active }">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Additional info</p>
+          <button
+            class="delete"
+            aria-label="close"
+            @click="additional_modal.active = false"
+          ></button>
+        </header>
+        <section class="modal-card-body content" style="text-align: justify">
+          {{ getAdditionalInfo }}
+        </section>
+      </div>
+    </div>
     <div class="box main" style="overflow: overlay">
       <table v-if="list.length" class="table" style="min-width: 100%">
         <thead>
@@ -154,33 +170,7 @@
               <span v-else>-</span>
             </td>
             <td>
-              <div
-                class="modal"
-                :class="{ 'is-active': req.additional_modal_active || false }"
-              >
-                <div class="modal-background"></div>
-                <div class="modal-card">
-                  <header class="modal-card-head">
-                    <p class="modal-card-title">Additional info</p>
-                    <button
-                      @click="req.additional_modal_active = false"
-                      class="delete"
-                      aria-label="close"
-                    ></button>
-                  </header>
-                  <section class="modal-card-body content">
-                    {{ req.additional }}
-                  </section>
-                </div>
-                <button
-                  class="modal-close is-large"
-                  aria-label="close"
-                  @click="req.additional_modal_active = false"
-                ></button>
-              </div>
-              <a
-                @click="req.additional_modal_active = true"
-                v-if="req.additional"
+              <a @click="setAdditionalInfo(req._id)" v-if="req.additional"
                 ><span class="icon">
                   <font-awesome-icon
                     title="Show additional info"
@@ -224,12 +214,6 @@
   </div>
 </template>
 
-<style scoped>
-.buttons {
-  display: block !important;
-}
-</style>
-
 <script>
 export default {
   data() {
@@ -244,12 +228,24 @@ export default {
         selected: null,
         sending: false,
       },
+      additional_modal: {
+        active: false,
+        selected: null,
+      },
       buttonBlActive: true,
       buttonResetActive: true,
     };
   },
   created() {
     this.getRequests();
+  },
+  computed: {
+    getAdditionalInfo() {
+      return (
+        this.list.find((a) => a._id === this.additional_modal.selected)
+          ?.additional || ""
+      );
+    },
   },
   methods: {
     getRequests() {
@@ -420,6 +416,10 @@ export default {
             this.modal.sending = false;
           });
       }
+    },
+    setAdditionalInfo(id) {
+      this.additional_modal.selected = id;
+      this.additional_modal.active = true;
     },
   },
 };
