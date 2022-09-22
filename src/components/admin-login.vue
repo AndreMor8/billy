@@ -14,7 +14,7 @@ export default {
     created() {
         this.hash = new URL(location).searchParams.get("token") || null;
         if (this.hash) this.goLogin();
-        else location.href = `${globalThis.apiDomain}/login-admin?dev=true`;
+        else location.href = `${globalThis.apiDomain}/login-admin`;
     },
     methods: {
         goLogin() {
