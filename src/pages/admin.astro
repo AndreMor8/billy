@@ -1,0 +1,10 @@
+---
+import Layout from "../layouts/Layout.astro";
+import AdminLogin from "../components/admin-login.vue";
+---
+
+<Layout title="Admin access - Billy'O Reilly" description="For admin access">
+    <div class="box main" style="max-width: 50em">
+        <AdminLogin client:only="vue" />
+    </div>
+</Layout>

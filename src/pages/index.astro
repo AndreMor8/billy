@@ -1,0 +1,24 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Form from "../components/form.vue";
+---
+
+<Layout
+    title="Billy'O Reilly"
+    description="Billy O'Reilly's build requests website"
+>
+    <div class="box main" style="max-width: 27em">
+        <h1 class="title">Build requests website</h1>
+    </div>
+    <div class="box main" style="max-width: 50em">
+        <p>
+            Here you will be able to choose a build of Windows that you would
+            like Billy to test in his next video.
+        </p>
+        <p>
+            The build will be chosen randomly, once chosen, Billy will present
+            said build in his next video.
+        </p>
+    </div>
+    <Form client:load />
+</Layout>

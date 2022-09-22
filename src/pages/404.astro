@@ -1,0 +1,15 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Page not found - Billy'O Reilly" description="Page not found">
+    <div class="box main" style="max-width: 50em">
+        <h1 class="title">Page not found...</h1>
+    </div>
+</Layout>
+
+<script>
+    setTimeout(() => {
+        location.href = "/";
+    }, 5000);
+</script>

@@ -1,0 +1,60 @@
+---
+import "bulma/css/bulma.min.css";
+import "@fortawesome/fontawesome-free/css/fontawesome.min.css";
+import "@fortawesome/fontawesome-free/css/brands.min.css";
+import "@fortawesome/fontawesome-free/css/solid.min.css";
+import Navbar from "../components/navbar.astro";
+export interface Props {
+	title: string;
+	description: string;
+}
+const { title, description } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en" class="has-navbar-fixed-bottom">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content={description} />
+		<title>{title}</title>
+		<link rel="preconnect" href="https://billy-api.andremor.dev" />
+		<script>
+			globalThis.apiDomain = "https://billy-api.andremor.dev";
+		</script>
+	</head>
+	<body>
+		<div id="general-view">
+			<slot />
+		</div>
+		<Navbar />
+		<style>
+			html {
+				background-image: url("/background.webp");
+				background-attachment: fixed;
+				background-size: cover;
+				background-repeat: no-repeat;
+				background-position: center;
+			}
+
+			#general-view {
+				text-align: -webkit-center;
+				padding: 1em;
+			}
+		</style>
+		<style is:global>
+			.main {
+				background-color: whitesmoke !important;
+			}
+			.form-span {
+				padding: 3px;
+				margin-top: 10px;
+				font-size: 20px;
+				color: #000;
+				background-color: rgb(181, 200, 255);
+				max-width: 50em;
+			}
+		</style>
+	</body>
+</html>

@@ -1,0 +1,129 @@
+---
+import logo from "../assets/logo.webp";
+const { pathname } = Astro.url;
+---
+
+<nav
+    class="navbar is-info is-fixed-bottom has-shadow"
+    role="navigation"
+    aria-label="main navigation"
+>
+    <div class="navbar-brand" data-target="navMenu">
+        <a href="/" class={`navbar-item ${pathname === "/" ? "is-active" : ""}`}
+            ><img src={logo} alt="Billy's icon" width="28" height="28" />
+        </a>
+        <a
+            role="button"
+            class="navbar-burger"
+            data-target="navMenu"
+            aria-label="menu"
+            aria-expanded="false"
+        >
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+    </div>
+    <div class="navbar-menu" id="navMenu">
+        <div class="navbar-start">
+            <a
+                href="/requests"
+                class={`navbar-item icon-text ${
+                    pathname.startsWith("/requests") ? "is-active" : ""
+                }`}
+            >
+                <span class="icon">
+                    <i class="fa-solid fa-list"></i>
+                </span>
+                <span>Requests</span>
+            </a>
+            <a
+                href="/privacy-policy"
+                class={`navbar-item icon-text ${
+                    pathname.startsWith("/privacy-policy") ? "is-active" : ""
+                }`}
+            >
+                <span class="icon">
+                    <i class="fa-solid fa-user-shield"></i>
+                </span>
+                <span>Privacy policy</span>
+            </a>
+        </div>
+        <div class="navbar-end">
+            <a
+                href="https://www.youtube.com/user/Sonicrush007"
+                target="_blank"
+                class="navbar-item icon-text"
+            >
+                <span class="icon">
+                    <i class="fa-brands fa-youtube"></i>
+                </span>
+                <span>YouTube</span>
+            </a>
+            <a
+                href="https://twitter.com/Sonicrush007"
+                target="_blank"
+                class="navbar-item icon-text"
+            >
+                <span class="icon">
+                    <i class="fa-brands fa-twitter"></i>
+                </span>
+                <span>Twitter</span>
+            </a>
+            <a
+                href="https://discord.gg/W2PYJA5rMd"
+                target="_blank"
+                class="navbar-item icon-text"
+            >
+                <span class="icon">
+                    <i class="fa-brands fa-discord"></i>
+                </span>
+                <span>Discord server</span>
+            </a>
+            <a
+                href="mailto:sonicrush007@outlook.com"
+                class="navbar-item icon-text"
+            >
+                <span class="icon">
+                    <i class="fa-solid fa-envelope"></i>
+                </span>
+                <span>Contact</span>
+            </a>
+            <div
+                class="navbar-item has-dropdown has-dropdown-up"
+                onclick="this.classList.toggle('is-active')"
+            >
+                <div class="navbar-link">
+                    © {new Date().getFullYear()} Billy O'Reilly
+                </div>
+                <div class="navbar-dropdown" style="left: -196%">
+                    <div class="navbar-item content">
+                        Created by AndreMor (<a
+                            href="https://andremor.dev"
+                            target="_blank">andremor.dev</a
+                        >) for Billy O'Reilly (<a
+                            href="https://www.youtube.com/user/Sonicrush007"
+                            target="_blank">youtube.com/user/Sonicrush007</a
+                        >)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const $navbarBurgers = Array.prototype.slice.call(
+            document.querySelectorAll(".navbar-burger"),
+            0
+        );
+        $navbarBurgers.forEach((el) => {
+            el.addEventListener("click", () => {
+                const target = el.dataset.target;
+                const $target = document.getElementById(target);
+                el.classList.toggle("is-active");
+                $target.classList.toggle("is-active");
+            });
+        });
+    });
+</script>

@@ -1,0 +1,13 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Verify from "../components/verify.vue";
+---
+
+<Layout
+    title="Verification - Billy'O Reilly"
+    description="Email verification page"
+>
+    <div class="box main" style="max-width: 50em">
+        <Verify client:only="vue" />
+    </div>
+</Layout>

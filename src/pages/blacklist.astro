@@ -1,0 +1,10 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Blacklist from "../components/blacklist.vue";
+---
+
+<Layout title="Email blacklist - Billy'O Reilly" description="Email blacklist">
+    <div class="box main" style="max-width: 50em">
+        <Blacklist client:only="vue" />
+    </div>
+</Layout>
