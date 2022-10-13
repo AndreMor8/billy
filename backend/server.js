@@ -32,11 +32,12 @@ const jwtManager = new JwtExpress({
     jwt: {
         secret: process.env.SECRET,
         options: {
-            //DON'T FORGET TO SET EXPIREIN UNDEFINED ON userParams
-            issuer: process.env.DOMAIN,
+            issuer: process.env.DOMAIN
         }
     }
 });
+
+delete jwtManager.userParams.userParams.jwt.options.expiresIn;
 
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_ADDRESS,

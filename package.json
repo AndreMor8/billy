@@ -12,12 +12,12 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/vue": "^1.0.2",
+    "@astrojs/vue": "^1.1.0",
     "@fortawesome/fontawesome-free": "^6.2.0",
-    "astro": "^1.2.8",
-    "astro-purgecss": "^1.1.1",
-    "axios": "^0.27.2",
+    "astro": "^1.4.7",
+    "astro-purgecss": "^1.2.1",
+    "axios": "^1.1.2",
     "bulma": "^0.9.4",
-    "vue": "^3.2.39"
+    "vue": "^3.2.40"
   }
 }
