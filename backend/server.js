@@ -137,7 +137,7 @@ app.post("/do-request", async (req, res) => {
         }
     }
 
-    const ip = process.env.NODE_ENV === "development" ? req.ip : req.headers["Fly-Client-IP"];
+    const ip = process.env.NODE_ENV === "development" ? req.ip : req.headers["fly-client-ip"];
     const pre_doc = await requests.findOne({ ips: { $elemMatch: { $eq: ip } }, chosen: { $eq: false } }).lean();
     if (pre_doc && !req.body.resend) return res.status(403).json({ message: "You cannot send more than 2 requests! Try again to change your data and request.", resend: true });
 
@@ -277,7 +277,7 @@ app.get("/check-active-request-list", async (req, res) => {
 app.get("/get-token-info", jwtManager.middleware(), async (req, res) => {
     if (req.user.admin) return res.status(200).json(req.user);
     const doc = await requests.findById(req.user.doc_id).lean();
-    const ip = process.env.NODE_ENV === "development" ? req.ip : req.headers["Fly-Client-IP"];
+    const ip = process.env.NODE_ENV === "development" ? req.ip : req.headers["fly-client-ip"];
     if (!doc) return res.status(404).json({ message: "Valid token but document not found...", clearToken: true });
     if (doc.chosen) return res.status(401).json({ message: "That request was already marked as chosen...", clearToken: true });
     if (!doc.ips.includes(ip)) await requests.findByIdAndUpdate(req.user.doc_id, { $push: { ips: ip } }, { new: true, lean: true });
